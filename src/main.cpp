@@ -125,23 +125,6 @@ void renderCallback()
 
 	/// swap background buffer.
 	glutSwapBuffers();
-
-	/*if(game_status == GS_RUNNING)
-	{
-		moveBall(ball, ball_move, ballStepSize, win_left, win_right, win_top, win_bottom);
-
-		// check collision with ball.
-		// ball will collide with bottom block if
-		// 1. ball.center.y + radius <= bottom block.lt.y
-		// 2. bottom block.lt.x < ball.center.x < bottom block.rt.x
-		if(isBallBottomBlockCollide(ball, bottom_block))
-		{
-			// set ball position and ball move state according to the collision coordinate.
-			ball_move = ((ball_move == BM_DOWN_LEFT) ? BM_UP_LEFT : BM_UP_RIGHT);
-		}
-
-		glutPostRedisplay(); // Redraw
-	}*/
 }
 
 static void timerCallback(int value)
@@ -154,10 +137,13 @@ static void timerCallback(int value)
 		// ball will collide with bottom block if
 		// 1. ball.center.y + radius <= bottom block.lt.y
 		// 2. bottom block.lt.x < ball.center.x < bottom block.rt.x
-		if(isBallBottomBlockCollide(ball, bottom_block))
+
+		int collision_pos = 0;
+		if(isBallBottomBlockCollide(ball, bottom_block, collision_pos))
 		{
 			// set ball position and ball move state according to the collision coordinate.
-			ball_move = ((ball_move == BM_DOWN_LEFT) ? BM_UP_LEFT : BM_UP_RIGHT);
+			ball_move = ((collision_pos == 1) ? BM_UP_LEFT :
+							(collision_pos == 2) ? BM_UP_STRAIGHT : BM_UP_RIGHT);
 		}
 
 		// game over
@@ -207,7 +193,7 @@ void specialKeysCallback(int key, int x, int y)
 		rb.x = rb.x - stepSize;
 		rt.x = rt.x - stepSize;
 
-		// Collision detection
+		// Collision detection for bottom block with left wall
 		if(win_left >= lt.x)
 		{
 			lt.x = win_left;
@@ -226,7 +212,7 @@ void specialKeysCallback(int key, int x, int y)
 		rb.x = rb.x + stepSize;
 		rt.x = rt.x + stepSize;
 
-		// Collision detection
+		// Collision detection for bottom block with right wall
 		if(rt.x >= win_right)
 		{
 			lt.x = win_right - BOTTOM_BLOCK_WIDTH;
@@ -255,16 +241,18 @@ void specialKeysCallback(int key, int x, int y)
 			// set a flag which control this and calculate ball position according to that.
 			// check ball is collide with boundary wall or not.
 
-			moveBall(ball, ball_move, ballStepSize, win_left, win_right, win_top, win_bottom);
+			//moveBall(ball, ball_move, ballStepSize, win_left, win_right, win_top, win_bottom);
 
 			// check collision with ball.
 			// ball will collide with bottom block if
 			// 1. ball.center.y + radius <= bottom block.lt.y
 			// 2. bottom block.lt.x < ball.center.x < bottom block.rt.x
-			if(isBallBottomBlockCollide(ball, bottom_block))
+			int collision_pos = 0;
+			if(isBallBottomBlockCollide(ball, bottom_block, collision_pos))
 			{
 				// set ball position and ball move state according to the collision coordinate.
-				ball_move = ((ball_move == BM_DOWN_LEFT) ? BM_UP_LEFT : BM_UP_RIGHT);
+				ball_move = ((collision_pos == 1) ? BM_UP_LEFT :
+								(collision_pos == 2) ? BM_UP_STRAIGHT : BM_UP_RIGHT);
 			}
 		}
 	}
@@ -306,7 +294,7 @@ int main(int argc, char **argv)
 
 	timerCallback(0);
 
-	/// start gl mainloop
+	/// start glut mainloop
 	glutMainLoop();
 
 	return(0);

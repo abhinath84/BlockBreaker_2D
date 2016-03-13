@@ -40,10 +40,12 @@ enum GAME_STATE
 // ball move status
 enum BALL_MOVE
 {
-	BM_DOWN_LEFT	= 0,
-	BM_DOWN_RIGHT	= 1,
-	BM_UP_LEFT		= 2,
-	BM_UP_RIGHT		= 3
+	BM_DOWN_LEFT		= 0,
+	BM_DOWN_RIGHT		= 1,
+	BM_UP_LEFT			= 2,
+	BM_UP_RIGHT			= 3,
+	BM_DOWN_STRAIGHT	= 4,
+	BM_UP_STRAIGHT		= 5
 };
 
 void glOrtho2D(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top);
@@ -55,7 +57,7 @@ void resizeCallback_low(GLfloat &win_left, GLfloat &win_right,
 void toggleGlutWindowMaximizeBox(char *szWindowTitle);
 void initTopBlock(vector<Block> &blocks, const GLfloat &win_left, const GLfloat &win_right,
 					const GLfloat &win_top, const GLfloat &block_width, const GLfloat &block_height);
-bool isBallBottomBlockCollide(const Circle &ball, const Block &bottom_block);
+bool isBallBottomBlockCollide(const Circle &ball, const Block &bottom_block, int &pos);
 void moveBall(Circle &ball, int &ball_state, const GLfloat &step,
 		const GLfloat &win_left, const GLfloat &win_right, const GLfloat &win_top, const GLfloat &win_bottom);
 bool isGameOver(const Circle &ball, const Block &bottom_block, const GLfloat &win_bottom);

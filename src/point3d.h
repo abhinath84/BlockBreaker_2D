@@ -3,6 +3,10 @@
  *
  *  Created on: 27-Feb-2016
  *      Author: abhi
+ *
+ *  Class : Point3d
+ *
+ *  Desc  : Structure to define 3D point.
  */
 
 #ifndef POINT3D_H

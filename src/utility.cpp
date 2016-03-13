@@ -112,7 +112,10 @@ void initTopBlock(vector<Block> &blocks, const GLfloat &win_left, const GLfloat 
 	}
 }
 
-bool isBallBottomBlockCollide(const Circle &ball, const Block &bottom_block)
+// pos 	= 1 -> left
+//		= 2 -> center
+//		= 3 -> right
+bool isBallBottomBlockCollide(const Circle &ball, const Block &bottom_block, int &pos)
 {
 	bool status = false;
 
@@ -125,7 +128,22 @@ bool isBallBottomBlockCollide(const Circle &ball, const Block &bottom_block)
 	{
 		if((bottom_block.getLeftTopCorner().x < ball.getCenter().x) &&
 				(ball.getCenter().x <= bottom_block.getRightTopCorner().x))
+		{
 			status = true;
+
+			// set the collision pos.
+			GLfloat middle = ((bottom_block.getLeftTopCorner().x + bottom_block.getRightTopCorner().x)/2);
+
+			// left
+			if(ball.getCenter().x < (middle - 4))
+				pos = 1;
+			// right
+			else if(ball.getCenter().x > (middle + 4))
+				pos = 3;
+			// middle
+			else
+				pos = 2;
+		}
 	}
 
 	return(status);
@@ -137,7 +155,8 @@ bool isGameOver(const Circle &ball, const Block &bottom_block, const GLfloat &wi
 
 	if((ball.getCenter().y + ball.getRadius()) <= win_bottom)
 	{
-		if(!isBallBottomBlockCollide(ball, bottom_block))
+		int collision_pos = 0;
+		if(!isBallBottomBlockCollide(ball, bottom_block, collision_pos))
 			status = true;
 	}
 
@@ -180,7 +199,7 @@ void drawGameOverBlock(const GLfloat &center_x, const GLfloat &center_y)
 	// write text.
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glRasterPos3f((center_x - 30.0f), (center_y + 10.0f), 0.0f);
-	glutBitmapString(GLUT_BITMAP_HELVETICA_18, "Game Over !!!");
+	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (char *)("Game Over !!!"));
 }
 
 void drawGameWinBlock(const GLfloat &center_x, const GLfloat &center_y)
@@ -199,7 +218,7 @@ void drawGameWinBlock(const GLfloat &center_x, const GLfloat &center_y)
 	// write text.
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glRasterPos3f((center_x - 30.0f), (center_y + 10.0f), 0.0f);
-	glutBitmapString(GLUT_BITMAP_HELVETICA_18, "Game Win !!!");
+	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (char *)("Game Win !!!"));
 }
 
 void moveBall(Circle &ball, int &ball_state, const GLfloat &step,
@@ -279,6 +298,14 @@ void moveBall(Circle &ball, int &ball_state, const GLfloat &step,
 			y = old_center.y + step;
 		}
 	}
+	else if(ball_state == BM_DOWN_STRAIGHT)
+	{
+		y = old_center.y - step;
+	}
+	else if(ball_state == BM_UP_STRAIGHT)
+	{
+		y = old_center.y + step;
+	}
 
 	ball.setCenter(Point3d(x, y, z));
 }
@@ -299,37 +326,38 @@ void breakTopBlocks(vector<Block> &top_blocks, Circle &ball, int &ball_state)
 			Block each = top_blocks[i];
 
 			if(((ball.getCenter().y + ball.getRadius()) > each.getLeftBottomCorner().y) &&
-					((each.getLeftBottomCorner().x <= ball.getCenter().x) &&
-					(ball.getCenter().x <= each.getRightBottomCorner().x)))
+				((each.getLeftBottomCorner().x <= ball.getCenter().x) &&
+				(ball.getCenter().x <= each.getRightBottomCorner().x)))
 			{
 				top_blocks[i].Broken(true);
-				ball_state = (ball_state == BM_UP_LEFT) ? BM_DOWN_LEFT : BM_DOWN_RIGHT;
+				ball_state = (ball_state == BM_UP_STRAIGHT) ?  BM_DOWN_STRAIGHT :
+								(ball_state == BM_UP_LEFT) ? BM_DOWN_LEFT : BM_DOWN_RIGHT;
 				break;
 			}
-      else
-      {
-        GLfloat diff = each.getLeftBottomCorner().x - (ball.getCenter().x + ball.getRadius());
+			else
+			{
+				GLfloat diff = each.getLeftBottomCorner().x - (ball.getCenter().x + ball.getRadius());
 
-			  // collide on left face of the block
-			  if((diff >= -3 && diff <= -1) &&
+				// collide on left face of the block
+				if((diff >= -3 && diff <= -1) &&
 					  ((each.getLeftTopCorner().y >= ball.getCenter().y) &&
 					  (each.getLeftBottomCorner().y <= ball.getCenter().y)))
-			  {
+				{
 				  top_blocks[i].Broken(true);
 				  ball_state = (ball_state == BM_DOWN_RIGHT) ? BM_DOWN_LEFT : BM_UP_LEFT;
 				  break;
-			  }
+				}
 
-			  // collide on right face of the block
-			  else if((diff >= 1 && diff <= 3) &&
+				// collide on right face of the block
+				else if((diff >= 1 && diff <= 3) &&
 					  ((each.getRightTopCorner().y >= ball.getCenter().y) &&
 					  (each.getRightBottomCorner().y <= ball.getCenter().y)))
-			  {
+				{
 				  top_blocks[i].Broken(true);
 				  ball_state = (ball_state == BM_DOWN_LEFT) ? BM_DOWN_RIGHT : BM_UP_RIGHT;
 				  break;
-			  }
-      }
+				}
+			}
 		}
 	}
 }
